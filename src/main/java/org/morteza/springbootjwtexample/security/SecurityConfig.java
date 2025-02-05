@@ -9,10 +9,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
@@ -21,13 +23,12 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     @Autowired
-    private UserRepo userRepo;
-    private JwtTokenFilter jwtTokenFilter;
+    private JwtRequestFilter jwtRequestFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(httpSecurityCorsConfigurer -> {
-                    httpSecurityCorsConfigurer.configure(http);})
+                    httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource());})
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement -> {
                     sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS);})
@@ -42,20 +43,18 @@ public class SecurityConfig {
                     requestMatcherRegistry
                             .requestMatchers("/api/public/**")
                             .permitAll()
-                            .requestMatchers("/api/aouter/**","/api/author/search","/api/book/**","/api/book/search")
+                            .requestMatchers("/api/author/**","/api/author/search","/api/book/**","/api/book/search")
+                            .permitAll()
+                            .requestMatchers("/signup","/user")
+                            .permitAll()
+                            .requestMatchers("/token")
                             .permitAll()
                             .anyRequest()
                             .authenticated();
                 })
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return null;
-    }
-
-    @Bean
-    public AuthenticationManagerBuilder authenticationManagerBuilder() throws Exception {
-        AuthenticationManagerBuilder managerBuilder = new AuthenticationManagerBuilder();
-        return null;
+        return http.build();
     }
 
     @Bean
@@ -63,7 +62,7 @@ public class SecurityConfig {
         return new CustomAuthenticationManager();
     }
 
-    @Bean
+    /*@Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -74,10 +73,23 @@ public class SecurityConfig {
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
-    }
+    }*/
     //
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new Pa();
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

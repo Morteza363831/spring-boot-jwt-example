@@ -22,10 +22,12 @@ public class CustomAuthenticationManager implements AuthenticationManager {
 
     @Autowired
     private UserRepo userRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
-    private Logger log = Logger.getLogger(CustomAuthenticationManager.class.getName());
+    private final Logger log = Logger.getLogger(CustomAuthenticationManager.class.getName());
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        System.out.println(authentication.getName());
         Optional<UserEntity> user = Optional.ofNullable(userRepository.findByUsername(authentication.getName()));
 
         if (user.isPresent()) {

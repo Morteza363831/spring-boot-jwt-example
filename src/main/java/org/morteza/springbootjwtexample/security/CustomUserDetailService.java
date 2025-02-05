@@ -1,6 +1,7 @@
 package org.morteza.springbootjwtexample.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,7 +27,7 @@ public class CustomUserDetailService implements UserDetailsService {
 
         Optional<UserEntity> userOptional = Optional.ofNullable(userRepo.findByUsername(username));
 
-        org.springframework.security.core.userdetails.User.UserBuilder userBuilder;
+        User.UserBuilder userBuilder;
 
         if (userOptional.isPresent()) {
 
